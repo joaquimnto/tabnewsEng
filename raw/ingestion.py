@@ -52,13 +52,16 @@ schema = StructType([
     StructField("children_deep_count", IntegerType(), nullable=False)
 ])
 
+df = spark.createDataFrame(data, schema=schema)
+
 df = df.withColumn("created_at", to_timestamp(df["created_at"], "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
 df = df.withColumn("updated_at", to_timestamp(df["updated_at"], "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
 df = df.withColumn("published_at", to_timestamp(df["published_at"], "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
 
-df = spark.createDataFrame(data, schema=schema)
+# COMMAND ----------
+
+df.write.mode("append").saveAsTable("rawTabNewsTable")
 
 # COMMAND ----------
 
-df.write.mode("append").saveAsTable("tabNewsTable")
-spark.sql("INSERT OVERWRITE DIRECTORY '/mnt/tabnewsdata/' USING parquet SELECT * FROM tabNewsTable ")
+df.write.mode("append").parquet('/mnt/tabnewsdata/rawdata')
